@@ -1,6 +1,7 @@
 # Financial-Services-Project-Work
 2nd Assignment Financial services : The Procyclical Leverage Estimation
 ```
+
 library(tidyverse)
 #Real Estate-----
 real_estate = read_csv("china_realestate_services.csv")
@@ -224,19 +225,44 @@ financial_panel = cbind(panel_names,time_panel,total_asset_panel,MTB_panel,lvg_p
 colnames(financial_panel)=c("Entity","Time","Total_Asset","MTB","Leverage")
 write.csv(financial_panel,"china_financial_panel.csv",row.names = FALSE)
 
-#Merging_datasets
+#Full_dataset
 full_panel_data = rbind(bank_panel, financial_panel,real_estate_panel)
 
 library(tidyr)
 full_panel_data %>% is.na() %>% sum()
+view(full_panel_data)
 
-
-write.csv(full_panel_data,"full_panel_data.csv",row.names = FALSE)
-
-#Grouping by financial services
+#adding ID
 library(dplyr)
-full_panel_data %>% group_by(Entity) %>% summarise (n=n())
+full_panel_data = as.tibble(full_panel_data)
+full_panel_data = full_panel_data %>% group_by(Entity)  %>% mutate(ID=cur_group_id() %>% ungroup())
 
-na.omit(full_panel_data)
+full_panel_data %>% is.na() %>% sum()
+full_panel_data=na.omit(full_panel_data)
 
+post_na_results = full_panel_data %>% group_by(Entity) %>% summarize(n=n()) %>% arrange(n)
+view(post_na_results) 
+
+#Selecting the observations which are below 80%. 63 (all times)*80%
+missing = c("")
+missing = post_na_results %>% filter(n<0.8*63) %>% select(Entity)
+
+#DPlyr anti_join----
+full_panel_data_no_na =full_panel_data %>% anti_join(missing)
+full_panel_data_no_na %>% group_by(Entity) %>% summarize(n=n()) %>% arrange(n)
+
+#Creating ID's ----
+#full_panel_data_no_na <- transform(full_panel_data_no_na,
+                      #ID = as.numeric(factor(Entity)))
+full_panel_data_no_na %>%
+  group_by(Entity) %>%
+  arrange(Time) %>%
+  mutate(diff = diff(Total_Asset)/lag(Total_Asset, default = first(Total_Asset)))
+
+full_panel_data_no_na %>% 
+  group_by(Entity) %>% 
+  arrange(Time)
+
+#Growth rate for loop----
+full_panel_data_no_na
 ```
