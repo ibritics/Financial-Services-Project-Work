@@ -1,4 +1,5 @@
 # Financial-Services-Project-Work
+This was a university project work realized by me and Yahya Misbah during the Financial Instruments and Markets labs. 
 2nd Assignment Financial services : The Procyclical Leverage Estimation
 ```
 
